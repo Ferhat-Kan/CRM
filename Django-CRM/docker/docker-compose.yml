@@ -1,0 +1,35 @@
+services:
+  crm-app:
+    build:
+      context: ..                   # proje kökünü işaret eder (Django-CRM)
+      dockerfile: docker/dockerfile # lowercase "dockerfile" dosyanız
+    image: djcrm:1
+    container_name: crm-app
+    env_file:
+      - ../db.env
+    depends_on:
+      - crm-db
+    ports:
+      - 8000:8000
+    networks:
+      - nw
+
+  crm-db:
+    image: postgres:latest
+    container_name: crm-db
+    env_file:
+      - ../db.env
+    ports:
+      - 5432:5432
+    volumes:
+      - /var/run/postgresql/:/var/run/postgresql
+    networks:
+      - nw
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  nw: {}
